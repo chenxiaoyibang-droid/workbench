@@ -350,6 +350,68 @@
             font-weight: 400;
         }
 
+        /* ===== 记账日历专用样式 ===== */
+        .calendar-grid.account-cal .day-cell {
+            flex-direction: column;
+            gap: 1px;
+            padding: 2px 1px;
+            font-size: 11px;
+            line-height: 1.2;
+            overflow: hidden;
+        }
+        .calendar-grid.account-cal .day-cell .acc-date {
+            font-size: 10px;
+            color: #b8a39a;
+            font-weight: 400;
+        }
+        .calendar-grid.account-cal .day-cell .acc-amt {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .calendar-grid.account-cal .day-cell .acc-amt.income { color: #6b9e7a; }
+        .calendar-grid.account-cal .day-cell .acc-amt.expense { color: #d47a5e; }
+        .calendar-grid.account-cal .day-cell .acc-amt.both { color: #a07a5e; }
+        .calendar-grid.account-cal .day-cell.today {
+            border-color: #c98d78;
+        }
+
+        /* ===== 当月收支统计 ===== */
+        .month-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 16px;
+            padding: 14px 8px;
+            background: #fcf8f6;
+            border-radius: 14px;
+            gap: 8px;
+        }
+        .month-stats .ms-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            flex: 1;
+        }
+        .month-stats .ms-label {
+            font-size: 12px;
+            color: #b8a39a;
+            font-weight: 500;
+        }
+        .month-stats .ms-value {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .month-stats .ms-value.income { color: #6b9e7a; }
+        .month-stats .ms-value.expense { color: #d47a5e; }
+        .month-stats .ms-value.balance { color: #3d2c2a; }
+        .month-stats .ms-divider {
+            width: 1px;
+            background: #e8dcd4;
+            margin: 4px 0;
+        }
+
         /* ===== 锻炼圆形进度 ===== */
         .progress-ring-wrap {
             display: flex;
@@ -925,6 +987,12 @@
             .calendar-grid .day-cell .date-num {
                 font-size: 10px;
             }
+            .calendar-grid.account-cal .day-cell .acc-amt {
+                font-size: 9px;
+            }
+            .month-stats .ms-value {
+                font-size: 14px;
+            }
         }
 
         /* ===== 工具 ===== */
@@ -1162,6 +1230,11 @@
                         <span class="expense">支出 <span id="account-expense-total">0.00</span></span>
                     </div>
                 </div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>📅</i> 本月记账日历</div>
+                <div id="account-calendar" class="calendar-grid account-cal"></div>
+                <div class="month-stats" id="account-month-stats"></div>
             </div>
             <div class="card">
                 <div class="card-title"><i>📋</i> 今日流水</div>
@@ -1962,6 +2035,106 @@
         }
 
         // ================================================================
+        //  记账日历 & 当月统计
+        // ================================================================
+        // 获取某月所有日期的收支汇总 { 'YYYY-MM-DD': {income, expense} }
+        function getMonthAccountSummary(year, month) {
+            const data = loadData();
+            const records = (data.account && data.account.records) || [];
+            const monthPrefix = `${year}-${String(month).padStart(2, '0')}-`;
+            const map = {};
+            records.forEach(r => {
+                if (!r.date || !r.date.startsWith(monthPrefix)) return;
+                if (!map[r.date]) map[r.date] = { income: 0, expense: 0 };
+                if (r.type === 'income') map[r.date].income += r.amount;
+                else map[r.date].expense += r.amount;
+            });
+            return map;
+        }
+
+        function renderAccountCalendar() {
+            const container = document.getElementById('account-calendar');
+            if (!container) return;
+            const data = loadData();
+            const now = beijingNow();
+            const year = now.getUTCFullYear();
+            const month = now.getUTCMonth() + 1;
+            const days = getMonthDays(year, month);
+            const today = getToday();
+            const monthMap = getMonthAccountSummary(year, month);
+            const firstDay = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+            const totalCells = Math.ceil((firstDay + days.length) / 7) * 7;
+
+            let html = '';
+            const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
+            weekLabels.forEach(label => {
+                html += `<div class="day-label">${label}</div>`;
+            });
+
+            for (let i = 0; i < totalCells; i++) {
+                if (i < firstDay || (i - firstDay) >= days.length) {
+                    html += `<div class="day-cell empty"></div>`;
+                    continue;
+                }
+                const dateStr = days[i - firstDay];
+                const isToday = dateStr === today;
+                const dayNum = parseInt(dateStr.slice(8), 10);
+                const dayAcc = monthMap[dateStr];
+                let amtHtml = '';
+                if (dayAcc) {
+                    // 有收支:显示净额(收入-支出)
+                    const net = dayAcc.income - dayAcc.expense;
+                    if (net > 0) {
+                        amtHtml = `<span class="acc-amt income">+${net.toFixed(0)}</span>`;
+                    } else if (net < 0) {
+                        amtHtml = `<span class="acc-amt expense">${net.toFixed(0)}</span>`;
+                    } else {
+                        amtHtml = `<span class="acc-amt both">0</span>`;
+                    }
+                }
+                html += `
+              <div class="day-cell ${isToday ? 'today' : ''}">
+                <span class="acc-date">${dayNum}</span>
+                ${amtHtml}
+              </div>
+            `;
+            }
+            container.innerHTML = html;
+        }
+
+        function renderMonthStats() {
+            const el = document.getElementById('account-month-stats');
+            if (!el) return;
+            const now = beijingNow();
+            const year = now.getUTCFullYear();
+            const month = now.getUTCMonth() + 1;
+            const monthMap = getMonthAccountSummary(year, month);
+            let income = 0, expense = 0;
+            Object.values(monthMap).forEach(d => {
+                income += d.income;
+                expense += d.expense;
+            });
+            const balance = income - expense;
+            const monthLabel = `${month}月`;
+            el.innerHTML = `
+                <div class="ms-item">
+                    <span class="ms-label">${monthLabel}收入</span>
+                    <span class="ms-value income">¥${income.toFixed(2)}</span>
+                </div>
+                <div class="ms-divider"></div>
+                <div class="ms-item">
+                    <span class="ms-label">${monthLabel}支出</span>
+                    <span class="ms-value expense">¥${expense.toFixed(2)}</span>
+                </div>
+                <div class="ms-divider"></div>
+                <div class="ms-item">
+                    <span class="ms-label">${monthLabel}结余</span>
+                    <span class="ms-value balance">¥${balance.toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        // ================================================================
         //  记账
         // ================================================================
         function renderAccount(viewDate) {
@@ -1983,6 +2156,10 @@
                 `<small>¥</small>${balance.toFixed(2)}`;
             document.getElementById('account-income-total').textContent = income.toFixed(2);
             document.getElementById('account-expense-total').textContent = expense.toFixed(2);
+
+            // 同步刷新记账日历和当月统计
+            renderAccountCalendar();
+            renderMonthStats();
 
             // 流水列表
             const container = document.getElementById('account-flow-list');
