@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🐱 个人专属工作台</title>
+    <!-- 纯 emoji 图标，无需联网加载 -->
+    <style>
+        /* ===== 全局重置 & 基础 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f9f3ef;
+            /* 暖白基底 */
+            display: flex;
+            min-height: 100vh;
+            color: #3d2c2a;
+        }
+
+        /* ===== 左侧导航 ===== */
+        .sidebar {
+            width: 76px;
+            background: #fffaf7;
+            border-right: 2px solid #f0e3dc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 0 20px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.03);
+            z-index: 10;
+        }
+
+        .sidebar .logo {
+            font-size: 30px;
+            margin-bottom: 32px;
+            cursor: default;
+            transition: transform 0.2s;
+        }
+        .sidebar .logo:hover {
+            transform: scale(1.08) rotate(-4deg);
+        }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            width: 100%;
+            align-items: center;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            color: #b8a39a;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            gap: 2px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+
+        .sidebar nav a i {
+            font-size: 22px;
+            margin-bottom: 1px;
+        }
+
+        .sidebar nav a span {
+            font-size: 10px;
+            letter-spacing: 0.3px;
+            opacity: 0.8;
+        }
+
+        .sidebar nav a:hover {
+            background: #f5ede8;
+            color: #7f5f52;
+        }
+
+        .sidebar nav a.active {
+            background: #fff0e8;
+            color: #c27a5e;
+            box-shadow: 0 2px 8px rgba(194, 122, 94, 0.12);
+        }
+
+        /* 底部猫爪 */
+        .sidebar .cat-paw {
+            font-size: 18px;
+            color: #dcc9bf;
+            margin-top: 20px;
+            opacity: 0.5;
+            letter-spacing: 2px;
+        }
+
+        /* ===== 主内容区 ===== */
+        .main {
+            flex: 1;
+            padding: 28px 32px 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ===== 页面标题 ===== */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .page-header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            color: #3d2c2a;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header h1 .emoji-badge {
+            font-size: 26px;
+            line-height: 1;
+        }
+
+        .page-header .sub-meta {
+            margin-left: auto;
+            font-size: 14px;
+            color: #b0978b;
+            background: #f5ede8;
+            padding: 6px 14px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== 卡片 ===== */
+        .card {
+            background: #fffffffa;
+            border-radius: 28px;
+            padding: 24px 28px;
+            box-shadow: 0 6px 24px rgba(180, 140, 120, 0.08);
+            border: 1px solid #f5ede8;
+            margin-bottom: 28px;
+            transition: box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 32px rgba(180, 140, 120, 0.12);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4f3a35;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: #c98d78;
+            font-size: 18px;
+        }
+
+        /* ===== 待办清单 ===== */
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #fcf8f6;
+            border-radius: 16px;
+            transition: background 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .todo-item:hover {
+            background: #f8f0eb;
+            border-color: #f0e3dc;
+        }
+
+        .todo-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #c27a5e;
+            cursor: pointer;
+            flex-shrink: 0;
+            border-radius: 6px;
+            transition: 0.15s;
+        }
+
+        .todo-item input[type="checkbox"]:checked {
+            accent-color: #6b9e7a;
+            transform: scale(1.05);
+        }
+
+        .todo-item .todo-label {
+            flex: 1;
+            font-size: 15px;
+            color: #3d2c2a;
+            font-weight: 450;
+            word-break: break-word;
+        }
+
+        .todo-item .todo-label.done {
+            text-decoration: line-through;
+            color: #8fbf9a;
+        }
+
+        .todo-item .delete-btn {
+            background: none;
+            border: none;
+            color: #dbb9ad;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 8px;
+            transition: 0.15s;
+            opacity: 0.5;
+        }
+
+        .todo-item .delete-btn:hover {
+            color: #d47a5e;
+            background: #f5e3dc;
+            opacity: 1;
+        }
+
+        .todo-add {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .todo-add input {
+            flex: 1;
+            min-width: 160px;
+            padding: 10px 16px;
+            border: 2px solid #f0e3dc;
+            border-radius: 30px;
+            font-size: 14px;
+            background: #fcf8f6;
+            outline: none;
+            transition: 0.2s;
+            color: #3d2c2a;
+        }
+
+        .todo-add input:focus {
+            border-color: #c98d78;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(201, 141, 120, 0.12);
+        }
+
+        .todo-add button {
+            padding: 10px 22px;
+            background: #f0e3dc;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 550;
+            color: #4f3a35;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .todo-add button:hover {
+            background: #e6d4cb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(180, 140, 120, 0.15);
+        }
+
+        /* ===== 日历网格 ===== */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .calendar-grid .day-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #b8a39a;
+            text-align: center;
+            padding: 4px 0;
+        }
+
+        .calendar-grid .day-cell {
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: #fcf8f6;
+            border-radius: 14px;
+            transition: 0.15s;
+            border: 1px solid transparent;
+        }
+
+        .calendar-grid .day-cell.today {
+            border-color: #c98d78;
+            background: #fff5ef;
+            box-shadow: 0 0 0 3px rgba(201, 141, 120, 0.15);
+        }
+
+        .calendar-grid .day-cell.empty {
+            background: transparent;
+            border: none;
+        }
+
+        .calendar-grid .day-cell .face {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .calendar-grid .day-cell .date-num {
+            font-size: 12px;
+            color: #b8a39a;
+            font-weight: 400;
+        }
+
+        /* ===== 锻炼圆形进度 ===== */
+        .progress-ring-wrap {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .progress-ring {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+            width: 100px;
+            height: 100px;
+        }
+
+        .progress-ring .bg {
+            fill: none;
+            stroke: #f0e3dc;
+            stroke-width: 8;
+        }
+
+        .progress-ring .fg {
+            fill: none;
+            stroke: #c98d78;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-ring .center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            font-weight: 600;
+            color: #3d2c2a;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .progress-ring .center-text small {
+            display: block;
+            font-size: 12px;
+            font-weight: 400;
+            color: #b8a39a;
+        }
+
+        /* ===== 记账 ===== */
+        .account-summary {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 0 4px;
+        }
+
+        .account-summary .balance {
+            font-size: 40px;
+            font-weight: 700;
+            color: #3d2c2a;
+            letter-spacing: 1px;
+        }
+
+        .account-summary .balance small {
+            font-size: 20px;
+            font-weight: 400;
+            color: #b8a39a;
+            margin-right: 4px;
+        }
+
+        .account-summary .sub-row {
+            display: flex;
+            gap: 28px;
+            margin-top: 6px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .account-summary .sub-row .income {
+            color: #6b9e7a;
+        }
+        .account-summary .sub-row .expense {
+            color: #d47a5e;
+        }
+
+        .account-summary .calendar-trigger {
+            margin-top: 10px;
+            font-size: 20px;
+            color: #b8a39a;
+            cursor: pointer;
+            transition: 0.15s;
+            background: none;
+            border: none;
+        }
+
+        .account-summary .calendar-trigger:hover {
+            color: #c98d78;
+            transform: scale(1.08);
+        }
+
+        .account-flow {
+            margin-top: 6px;
+        }
+
+        .flow-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            background: #fcf8f6;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            border-left: 4px solid transparent;
+            transition: 0.15s;
+        }
+
+        .flow-item .icon {
+            font-size: 22px;
+            width: 36px;
+            text-align: center;
+        }
+
+        .flow-item .note {
+            flex: 1;
+            font-size: 14px;
+            color: #3d2c2a;
+        }
+
+        .flow-item .amount {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .flow-item .amount.income {
+            color: #6b9e7a;
+        }
+        .flow-item .amount.expense {
+            color: #d47a5e;
+        }
+
+        .flow-item .del-flow {
+            color: #dbb9ad;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 8px;
+            transition: 0.15s;
+            opacity: 0.3;
+        }
+
+        .flow-item .del-flow:hover {
+            opacity: 1;
+            color: #d47a5e;
+            background: #f5e3dc;
+        }
+
+        .flow-empty {
+            text-align: center;
+            color: #b8a39a;
+            padding: 24px 0;
+            font-size: 14px;
+        }
+
+        .btn-add-flow {
+            width: 100%;
+            padding: 16px;
+            background: #f5ede8;
+            border: 2px dashed #dcc9bf;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 550;
+            color: #4f3a35;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-add-flow:hover {
+            background: #f0e3dc;
+            border-color: #c98d78;
+            transform: translateY(-2px);
+        }
+
+        /* ===== 记账表单 Modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(60, 40, 35, 0.35);
+            backdrop-filter: blur(3px);
+            z-index: 999;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-sheet {
+            background: #fffaf7;
+            width: 100%;
+            max-width: 460px;
+            border-radius: 32px 32px 0 0;
+            padding: 28px 28px 34px;
+            box-shadow: 0 -10px 40px rgba(60, 40, 35, 0.12);
+            animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-sheet .modal-handle {
+            width: 48px;
+            height: 4px;
+            background: #dcc9bf;
+            border-radius: 4px;
+            margin: 0 auto 20px;
+        }
+
+        .modal-sheet h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #3d2c2a;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+
+        .modal-sheet .toggle-group {
+            display: flex;
+            background: #f5ede8;
+            border-radius: 30px;
+            padding: 4px;
+            margin-bottom: 18px;
+        }
+
+        .modal-sheet .toggle-group button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 550;
+            color: #7f5f52;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .modal-sheet .toggle-group button.active {
+            background: #fff;
+            color: #3d2c2a;
+            box-shadow: 0 2px 12px rgba(180, 140, 120, 0.12);
+        }
+
+        .modal-sheet .field {
+            margin-bottom: 16px;
+        }
+
+        .modal-sheet .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #7f5f52;
+            margin-bottom: 4px;
+        }
+
+        .modal-sheet .field input,
+        .modal-sheet .field select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #f0e3dc;
+            border-radius: 20px;
+            font-size: 15px;
+            background: #fcf8f6;
+            outline: none;
+            transition: 0.2s;
+            color: #3d2c2a;
+        }
+
+        .modal-sheet .field input:focus,
+        .modal-sheet .field select:focus {
+            border-color: #c98d78;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(201, 141, 120, 0.08);
+        }
+
+        .modal-sheet .field select {
+            appearance: auto;
+        }
+
+        .modal-sheet .btn-save-flow {
+            width: 100%;
+            padding: 14px;
+            background: #c98d78;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 6px;
+        }
+
+        .modal-sheet .btn-save-flow:hover {
+            background: #b87a64;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201, 141, 120, 0.25);
+        }
+
+        .modal-sheet .btn-cancel-flow {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            font-size: 14px;
+            color: #b8a39a;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        /* ===== 早睡打卡 ===== */
+        .sleep-target {
+            font-size: 14px;
+            color: #b0978b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .sleep-target .edit-hint {
+            text-decoration: underline;
+            color: #c98d78;
+        }
+
+        .sleep-status {
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            padding: 12px 0 6px;
+            color: #3d2c2a;
+        }
+
+        .sleep-status .sub {
+            font-size: 16px;
+            font-weight: 400;
+            color: #b8a39a;
+        }
+
+        .sleep-btn-wrap {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0 28px;
+        }
+
+        .sleep-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(145deg, #5b7a9e, #3d5a7a);
+            color: #fff;
+            font-size: 22px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 12px 40px rgba(60, 90, 120, 0.25);
+            transition: 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            line-height: 1.4;
+        }
+
+        .sleep-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 16px 48px rgba(60, 90, 120, 0.35);
+        }
+
+        .sleep-btn.done {
+            background: linear-gradient(145deg, #7fb08c, #5d8f72);
+            box-shadow: 0 12px 40px rgba(90, 140, 110, 0.25);
+            cursor: default;
+        }
+
+        .sleep-btn.done:hover {
+            transform: none;
+            box-shadow: 0 12px 40px rgba(90, 140, 110, 0.25);
+        }
+
+        .sleep-btn .small {
+            font-size: 14px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .sleep-week {
+            display: flex;
+            justify-content: space-between;
+            max-width: 360px;
+            margin: 0 auto 8px;
+            gap: 6px;
+        }
+
+        .sleep-week .dot {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #f0e3dc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #b8a39a;
+            transition: 0.15s;
+            border: 2px solid transparent;
+        }
+
+        .sleep-week .dot.done {
+            background: #7fb08c;
+            color: #fff;
+        }
+
+        .sleep-week .dot.today {
+            border-color: #c98d78;
+            box-shadow: 0 0 0 3px rgba(201, 141, 120, 0.15);
+        }
+
+        .sleep-streak {
+            text-align: center;
+            font-size: 14px;
+            color: #b0978b;
+            margin-top: 10px;
+        }
+
+        .sleep-streak strong {
+            color: #c98d78;
+            font-weight: 600;
+        }
+
+        .sleep-settings {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #b8a39a;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 12px;
+            transition: 0.15s;
+        }
+
+        .sleep-settings:hover {
+            background: #f5ede8;
+            color: #7f5f52;
+        }
+
+        /* ===== 浮动表情 ===== */
+        .float-emoji {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.6);
+            font-size: 72px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: none;
+            animation: floatEmoji 1s ease forwards;
+            text-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        @keyframes floatEmoji {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.6);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -60%) scale(0.9);
+            }
+        }
+
+        /* ===== 隐藏页面 ===== */
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 640px) {
+            .sidebar {
+                width: 64px;
+                padding: 16px 0;
+            }
+            .sidebar nav a {
+                width: 48px;
+                height: 48px;
+                font-size: 10px;
+            }
+            .sidebar nav a i {
+                font-size: 18px;
+            }
+            .main {
+                padding: 16px 14px 30px;
+            }
+            .card {
+                padding: 18px 16px;
+                border-radius: 20px;
+            }
+            .page-header h1 {
+                font-size: 20px;
+            }
+            .progress-ring {
+                width: 76px;
+                height: 76px;
+            }
+            .progress-ring svg {
+                width: 76px;
+                height: 76px;
+            }
+            .sleep-btn {
+                width: 150px;
+                height: 150px;
+                font-size: 18px;
+            }
+            .account-summary .balance {
+                font-size: 30px;
+            }
+            .modal-sheet {
+                padding: 20px 18px 28px;
+            }
+            .calendar-grid .day-cell .face {
+                font-size: 18px;
+            }
+            .calendar-grid .day-cell .date-num {
+                font-size: 10px;
+            }
+        }
+
+        /* ===== 工具 ===== */
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gap-8 {
+            gap: 8px;
+        }
+
+        .mt-8 {
+            margin-top: 8px;
+        }
+
+        .text-muted {
+            color: #b8a39a;
+        }
+
+        /* ===== 日期选择器 (记账历史) ===== */
+        .date-picker-popup {
+            display: none;
+            background: #fffaf7;
+            border-radius: 20px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 32px rgba(60, 40, 35, 0.12);
+            border: 1px solid #f0e3dc;
+            position: absolute;
+            top: 48px;
+            right: 0;
+            z-index: 50;
+            min-width: 200px;
+        }
+        .date-picker-popup.open {
+            display: block;
+        }
+        .date-picker-popup input[type="date"] {
+            padding: 8px 12px;
+            border: 2px solid #f0e3dc;
+            border-radius: 16px;
+            font-size: 14px;
+            background: #fcf8f6;
+            outline: none;
+            width: 100%;
+            color: #3d2c2a;
+        }
+        .date-picker-popup input[type="date"]:focus {
+            border-color: #c98d78;
+        }
+        .date-picker-popup .close-picker {
+            display: block;
+            margin-top: 10px;
+            text-align: center;
+            background: none;
+            border: none;
+            color: #b8a39a;
+            font-size: 13px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .account-summary .picker-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* 猫咪装饰小元素 */
+        .cat-ear {
+            display: inline-block;
+            font-size: 14px;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 左侧导航 ===== -->
+    <aside class="sidebar">
+        <div class="logo">🐱</div>
+        <nav>
+            <a href="#" data-page="breakfast" class="active">
+                <i>🍳</i>
+                <span>早餐</span>
+            </a>
+            <a href="#" data-page="lunch">
+                <i>🍱</i>
+                <span>午餐</span>
+            </a>
+            <a href="#" data-page="dinner">
+                <i>🌙</i>
+                <span>晚餐</span>
+            </a>
+            <a href="#" data-page="fitness">
+                <i>🏃</i>
+                <span>锻炼</span>
+            </a>
+            <a href="#" data-page="account">
+                <i>💰</i>
+                <span>记账</span>
+            </a>
+            <a href="#" data-page="sleep">
+                <i>🛏️</i>
+                <span>早睡</span>
+            </a>
+        </nav>
+        <div class="cat-paw">🐾 · · ·</div>
+    </aside>
+
+    <!-- ===== 主内容 ===== -->
+    <div class="main">
+
+        <!-- ============================================================ -->
+        <!-- 早餐 -->
+        <!-- ============================================================ -->
+        <section id="page-breakfast" class="page active">
+            <div class="page-header">
+                <h1>🍳 早餐 <span class="cat-ear">🐈</span></h1>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>✅</i> 今日早餐清单</div>
+                <div class="todo-list" id="breakfast-list"></div>
+                <div class="todo-add">
+                    <input type="text" id="breakfast-input" placeholder="添加新任务…" />
+                    <button id="breakfast-add"><i>➕</i> 添加</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 午餐 -->
+        <!-- ============================================================ -->
+        <section id="page-lunch" class="page">
+            <div class="page-header">
+                <h1>🥗 午餐 <span id="lunch-badge" class="emoji-badge"></span><span class="cat-ear">🐈</span></h1>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>✅</i> 今日午餐清单</div>
+                <div class="todo-list" id="lunch-list"></div>
+                <div class="todo-add">
+                    <input type="text" id="lunch-input" placeholder="添加新任务…" />
+                    <button id="lunch-add"><i>➕</i> 添加</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>📅</i> 本月午餐日历</div>
+                <div id="lunch-calendar" class="calendar-grid"></div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 晚餐 -->
+        <!-- ============================================================ -->
+        <section id="page-dinner" class="page">
+            <div class="page-header">
+                <h1>🌙 晚餐 <span id="dinner-badge" class="emoji-badge"></span><span class="cat-ear">🐈</span></h1>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>✅</i> 今日晚餐清单</div>
+                <div class="todo-list" id="dinner-list"></div>
+                <div class="todo-add">
+                    <input type="text" id="dinner-input" placeholder="添加新任务…" />
+                    <button id="dinner-add"><i>➕</i> 添加</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>📅</i> 本月晚餐日历</div>
+                <div id="dinner-calendar" class="calendar-grid"></div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 锻炼身体 -->
+        <!-- ============================================================ -->
+        <section id="page-fitness" class="page">
+            <div class="page-header">
+                <h1>🏃 锻炼 <span id="fitness-badge" class="emoji-badge"></span><span class="cat-ear">🐈</span></h1>
+                <span class="sub-meta">🎯 每日目标 60 分钟</span>
+            </div>
+            <div class="card">
+                <div class="progress-ring-wrap">
+                    <div class="progress-ring">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="bg" cx="50" cy="50" r="42" />
+                            <circle class="fg" id="fitness-ring" cx="50" cy="50" r="42"
+                            stroke-dasharray="263.89" stroke-dashoffset="263.89" />
+                        </svg>
+                        <div class="center-text" id="fitness-progress-text">
+                            0 <small>/ 60</small>
+                        </div>
+                    </div>
+                    <div style="flex:1; min-width:140px;">
+                        <div style="font-size:14px; color:#7f5f52; font-weight:500;">今日锻炼进度</div>
+                        <div style="font-size:13px; color:#b8a39a; margin-top:4px;" id="fitness-status-label">
+                            还没有运动记录
+                        </div>
+                    </div>
+                </div>
+                <div class="card-title" style="margin-top:6px;"><i>✅</i> 锻炼清单</div>
+                <div class="todo-list" id="fitness-list"></div>
+                <div class="todo-add">
+                    <input type="text" id="fitness-input" placeholder="添加新任务…" />
+                    <button id="fitness-add"><i>➕</i> 添加</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>📅</i> 本月锻炼日历</div>
+                <div id="fitness-calendar" class="calendar-grid"></div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 记账 -->
+        <!-- ============================================================ -->
+        <section id="page-account" class="page">
+            <div class="page-header">
+                <h1>💰 记账 <span class="cat-ear">🐈</span></h1>
+            </div>
+            <div class="card">
+                <div class="account-summary">
+                    <div class="picker-wrap">
+                        <button class="calendar-trigger" id="account-calendar-trigger">
+                            <i>📅</i>
+                        </button>
+                        <div class="date-picker-popup" id="account-date-picker">
+                            <input type="date" id="account-view-date" />
+                            <button class="close-picker" id="account-picker-close">✕ 关闭</button>
+                        </div>
+                    </div>
+                    <div class="balance" id="account-balance">
+                        <small>¥</small>0.00
+                    </div>
+                    <div class="sub-row">
+                        <span class="income">收入 <span id="account-income-total">0.00</span></span>
+                        <span class="expense">支出 <span id="account-expense-total">0.00</span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>📋</i> 今日流水</div>
+                <div id="account-flow-list" class="account-flow"></div>
+                <button class="btn-add-flow" id="account-add-btn"><i>➕</i> 记一笔</button>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 早睡打卡 -->
+        <!-- ============================================================ -->
+        <section id="page-sleep" class="page">
+            <div class="page-header">
+                <h1>😴 早睡打卡 <span class="cat-ear">🐈</span></h1>
+                <button class="sleep-settings" id="sleep-settings-btn"><i>⚙️</i></button>
+            </div>
+            <div class="card">
+                <div class="sleep-target" id="sleep-target-display">⏰ 目标：22:00</div>
+                <div class="sleep-status" id="sleep-status-display">
+                    🟡 今天还没睡
+                    <div class="sub" id="sleep-time-sub"></div>
+                </div>
+                <div class="sleep-btn-wrap">
+                    <button class="sleep-btn" id="sleep-btn">
+                        <span>🌙 准备睡觉</span>
+                        <span class="small">点击记录入睡时间</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i>📅</i> 本周打卡</div>
+                <div class="sleep-week" id="sleep-week-dots"></div>
+                <div class="sleep-streak" id="sleep-streak-text">🔥 已连续坚持 <strong>0</strong> 天</div>
+                <div style="text-align:center; margin-top:12px;">
+                    <button style="background:none; border:none; color:#b8a39a; font-size:13px; cursor:pointer; text-decoration:underline;" id="sleep-history-btn">📅 查看历史</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ===== 记账表单 Modal ===== -->
+    <div class="modal-overlay" id="account-modal">
+        <div class="modal-sheet">
+            <div class="modal-handle"></div>
+            <h3>📝 记一笔</h3>
+            <div class="toggle-group" id="flow-type-toggle">
+                <button class="active" data-type="expense">支出</button>
+                <button data-type="income">收入</button>
+            </div>
+            <div class="field">
+                <label>金额</label>
+                <input type="number" id="flow-amount" placeholder="0.00" step="0.01" min="0" />
+            </div>
+            <div class="field">
+                <label>分类</label>
+                <select id="flow-category">
+                    <option value="🍜">🍜 吃饭</option>
+                    <option value="🚇">🚇 交通</option>
+                    <option value="🛒">🛒 购物</option>
+                    <option value="💼">💼 工资</option>
+                    <option value="🎮">🎮 娱乐</option>
+                    <option value="📦">📦 其他</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>备注</label>
+                <input type="text" id="flow-note" placeholder="午饭 / 买牛奶 …" />
+            </div>
+            <button class="btn-save-flow" id="flow-save">✅ 保存</button>
+            <button class="btn-cancel-flow" id="flow-cancel">取消</button>
+        </div>
+    </div>
+
+    <!-- ===== 早睡目标设置 Modal ===== -->
+    <div class="modal-overlay" id="sleep-target-modal">
+        <div class="modal-sheet" style="max-width:400px;">
+            <div class="modal-handle"></div>
+            <h3>⏰ 设置目标时间</h3>
+            <div class="field">
+                <label>选择入睡目标时间</label>
+                <input type="time" id="sleep-target-input" value="22:00" />
+            </div>
+            <button class="btn-save-flow" id="sleep-target-save">✅ 保存</button>
+            <button class="btn-cancel-flow" id="sleep-target-cancel">取消</button>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  工具 & 存储
+        // ================================================================
+        const STORAGE_KEY = 'workbuddy_data';
+        const DEFAULT_DATA = {
+            breakfast: { todos: ['全鸡蛋2个蛋白', '玉米', '红薯', '无糖豆浆'], done: [] },
+            lunch: { todos: ['鸡肉轻食', '牛肉轻食', '饭堂', '垃圾外卖'], done: [] },
+            dinner: { todos: ['鸡腿', '鸡腿+水煮青菜', '豆腐+红薯+青菜', '垃圾外卖'], done: [] },
+            fitness: { todos: ['早上快走30分钟', '晚上无氧30分钟'], done: [] },
+            account: { records: [] },
+            sleep: { history: {}, target: '22:00' },
+            // 日历表情: { '2026-07-30': '😊' 或 '😢' }
+            calendar: { lunch: {}, dinner: {}, fitness: {} },
+            // 锻炼当日是否已触发过表情
+            fitnessEmojiTriggered: false,
+        };
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    // 合并默认值（保证新字段存在），但保留用户已有的每日数据
+                    return deepMerge(DEFAULT_DATA, parsed);
+                }
+            } catch (_) { /* ignore */ }
+            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+
+        function deepMerge(base, override) {
+            const result = JSON.parse(JSON.stringify(base));
+            for (const key in override) {
+                if (override.hasOwnProperty(key)) {
+                    if (typeof override[key] === 'object' && override[key] !== null && !Array.isArray(override[key])) {
+                        // 对于每日数据（如 breakfast_2026-07-30），保留用户数据
+                        // 对于顶层对象（如 breakfast），递归合并
+                        result[key] = deepMerge(result[key] || {}, override[key]);
+                    } else {
+                        result[key] = override[key];
+                    }
+                }
+            }
+            return result;
+        }
+
+        // 初始化今日默认数据（如果当天数据不存在）
+        function initTodayData() {
+            const data = loadData();
+            const today = getToday();
+            let changed = false;
+
+            const meals = [
+                { key: 'breakfast', defaults: ['全鸡蛋2个蛋白', '玉米', '红薯', '无糖豆浆'] },
+                { key: 'lunch', defaults: ['鸡肉轻食', '牛肉轻食', '饭堂', '垃圾外卖'] },
+                { key: 'dinner', defaults: ['鸡腿', '鸡腿+水煮青菜', '豆腐+红薯+青菜', '垃圾外卖'] },
+                { key: 'fitness', defaults: ['早上快走30分钟', '晚上无氧30分钟'] }
+            ];
+
+            meals.forEach(meal => {
+                const dayKey = `${meal.key}_${today}`;
+                if (!data[meal.key][dayKey] || !data[meal.key][dayKey].todos || data[meal.key][dayKey].todos.length === 0) {
+                    data[meal.key][dayKey] = { todos: [...meal.defaults], done: data[meal.key][dayKey]?.done || [] };
+                    changed = true;
+                }
+            });
+
+            if (changed) saveData(data);
+        }
+
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            // 自动备份到云端（延迟执行，不阻塞操作）
+            clearTimeout(window._cloudSaveTimer);
+            window._cloudSaveTimer = setTimeout(syncToCloud, 2000);
+        }
+
+        // ===== 云端同步 =====
+        const CLOUD_KEY = 'workbuddy_cloud_id_' + btoa(navigator.userAgent).slice(0, 12);
+        
+        function getCloudId() {
+            let id = localStorage.getItem(CLOUD_KEY);
+            if (!id) {
+                id = 'wb_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+                localStorage.setItem(CLOUD_KEY, id);
+            }
+            return id;
+        }
+
+        async function syncToCloud() {
+            try {
+                const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                const cloudId = getCloudId();
+                const payload = JSON.stringify({ id: cloudId, data: data, ts: Date.now() });
+                
+                const resp = await fetch('https://jsonblob.com/api/jsonBlob', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: payload
+                });
+                
+                if (resp.ok) {
+                    const newId = resp.headers.get('Location') || '';
+                    localStorage.setItem(CLOUD_KEY + '_latest', newId);
+                    console.log('☁️ 已备份到云端');
+                }
+            } catch(e) {
+                console.log('云端备份失败（离线可用）');
+            }
+        }
+
+        async function restoreFromCloud() {
+            const latestId = localStorage.getItem(CLOUD_KEY + '_latest');
+            if (!latestId) return false;
+            try {
+                const resp = await fetch('https://jsonblob.com' + latestId);
+                if (!resp.ok) return false;
+                const cloud = await resp.json();
+                if (cloud && cloud.data) {
+                    const merged = deepMerge(DEFAULT_DATA, cloud.data);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                    console.log('☁️ 已从云端恢复数据');
+                    return true;
+                }
+            } catch(e) {
+                console.log('云端恢复失败');
+            }
+            return false;
+        }
+
+        function getToday() {
+            return new Date().toISOString().slice(0, 10);
+        }
+
+        function getWeekDays() {
+            const now = new Date();
+            const day = now.getDay();
+            const mondayOffset = day === 0 ? -6 : 1 - day;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + mondayOffset);
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                days.push(d.toISOString().slice(0, 10));
+            }
+            return days;
+        }
+
+        function getMonthDays(year, month) {
+            const days = [];
+            const count = new Date(year, month, 0).getDate();
+            for (let i = 1; i <= count; i++) {
+                const d = new Date(year, month - 1, i);
+                days.push(d.toISOString().slice(0, 10));
+            }
+            return days;
+        }
+
+        // ================================================================
+        //  表情浮动
+        // ================================================================
+        function showFloatEmoji(emoji) {
+            const el = document.createElement('div');
+            el.className = 'float-emoji';
+            el.textContent = emoji;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1100);
+        }
+
+        // ================================================================
+        //  早餐
+        // ================================================================
+        function renderBreakfast() {
+            const data = loadData();
+            const today = getToday();
+            const key = `breakfast_${today}`;
+            const dayData = data.breakfast[key] || { todos: [...DEFAULT_DATA.breakfast.todos], done: [] };
+            const list = document.getElementById('breakfast-list');
+            list.innerHTML = '';
+            const allTodos = dayData.todos;
+            const doneSet = new Set(dayData.done);
+            let doneCount = 0;
+
+            allTodos.forEach((task, idx) => {
+                const checked = doneSet.has(task);
+                if (checked) doneCount++;
+                const div = document.createElement('div');
+                div.className = 'todo-item';
+                div.innerHTML = `
+              <input type="checkbox" ${checked ? 'checked' : ''} data-task="${task.replace(/"/g, '&quot;')}" />
+              <span class="todo-label ${checked ? 'done' : ''}">${task}</span>
+              <button class="delete-btn" data-task="${task.replace(/"/g, '&quot;')}"><i>✕</i></button>
+            `;
+                list.appendChild(div);
+            });
+
+            // 事件
+            list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `breakfast_${today2}`;
+                    if (!data2.breakfast[key2]) {
+                        data2.breakfast[key2] = { todos: [...DEFAULT_DATA.breakfast.todos], done: [] };
+                    }
+                    const day = data2.breakfast[key2];
+                    if (this.checked) {
+                        if (!day.done.includes(task)) day.done.push(task);
+                    } else {
+                        day.done = day.done.filter(t => t !== task);
+                    }
+                    saveData(data2);
+                    renderBreakfast();
+                    // 检查是否完成 ≥3 个
+                    const after = loadData();
+                    const afterDay = after.breakfast[key2] || { todos: [], done: [] };
+                    if (afterDay.done.length >= 3) {
+                        showFloatEmoji('😊');
+                    }
+                });
+            });
+
+            list.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `breakfast_${today2}`;
+                    if (data2.breakfast[key2]) {
+                        data2.breakfast[key2].todos = data2.breakfast[key2].todos.filter(t => t !== task);
+                        data2.breakfast[key2].done = data2.breakfast[key2].done.filter(t => t !== task);
+                        saveData(data2);
+                        renderBreakfast();
+                    }
+                });
+            });
+
+            // 添加
+            document.getElementById('breakfast-add').onclick = function() {
+                const input = document.getElementById('breakfast-input');
+                const val = input.value.trim();
+                if (!val) return;
+                const data2 = loadData();
+                const today2 = getToday();
+                const key2 = `breakfast_${today2}`;
+                if (!data2.breakfast[key2]) {
+                    data2.breakfast[key2] = { todos: [...DEFAULT_DATA.breakfast.todos], done: [] };
+                }
+                data2.breakfast[key2].todos.push(val);
+                saveData(data2);
+                input.value = '';
+                renderBreakfast();
+            };
+            document.getElementById('breakfast-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') document.getElementById('breakfast-add').click();
+            });
+        }
+
+        // ================================================================
+        //  午餐
+        // ================================================================
+        function renderLunch() {
+            const data = loadData();
+            const today = getToday();
+            const key = `lunch_${today}`;
+            const dayData = data.lunch[key] || { todos: [...DEFAULT_DATA.lunch.todos], done: [] };
+            const list = document.getElementById('lunch-list');
+            list.innerHTML = '';
+            const allTodos = dayData.todos;
+            const doneSet = new Set(dayData.done);
+
+            allTodos.forEach((task) => {
+                const checked = doneSet.has(task);
+                const div = document.createElement('div');
+                div.className = 'todo-item';
+                div.innerHTML = `
+              <input type="checkbox" ${checked ? 'checked' : ''} data-task="${task.replace(/"/g, '&quot;')}" />
+              <span class="todo-label ${checked ? 'done' : ''}">${task}</span>
+              <button class="delete-btn" data-task="${task.replace(/"/g, '&quot;')}"><i>✕</i></button>
+            `;
+                list.appendChild(div);
+            });
+
+            list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `lunch_${today2}`;
+                    if (!data2.lunch[key2]) {
+                        data2.lunch[key2] = { todos: [...DEFAULT_DATA.lunch.todos], done: [] };
+                    }
+                    const day = data2.lunch[key2];
+                    if (this.checked) {
+                        if (!day.done.includes(task)) day.done.push(task);
+                        // 触发表情
+                        const smileTasks = ['鸡肉轻食', '牛肉轻食'];
+                        const cryTasks = ['饭堂', '垃圾外卖'];
+                        if (smileTasks.includes(task)) {
+                            showFloatEmoji('😊');
+                            data2.calendar.lunch[today2] = '😊';
+                        } else if (cryTasks.includes(task)) {
+                            showFloatEmoji('😢');
+                            data2.calendar.lunch[today2] = '😢';
+                        }
+                    } else {
+                        day.done = day.done.filter(t => t !== task);
+                        // 如果取消勾选，清除当天日历标记（重新计算）
+                        const dayDone = day.done;
+                        const smile = ['鸡肉轻食', '牛肉轻食'];
+                        const cry = ['饭堂', '垃圾外卖'];
+                        const hasSmile = dayDone.some(t => smile.includes(t));
+                        const hasCry = dayDone.some(t => cry.includes(t));
+                        if (hasSmile) data2.calendar.lunch[today2] = '😊';
+                        else if (hasCry) data2.calendar.lunch[today2] = '😢';
+                        else delete data2.calendar.lunch[today2];
+                    }
+                    saveData(data2);
+                    renderLunch();
+                });
+            });
+
+            list.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `lunch_${today2}`;
+                    if (data2.lunch[key2]) {
+                        data2.lunch[key2].todos = data2.lunch[key2].todos.filter(t => t !== task);
+                        data2.lunch[key2].done = data2.lunch[key2].done.filter(t => t !== task);
+                        // 重新计算日历
+                        const dayDone = data2.lunch[key2].done;
+                        const smile = ['鸡肉轻食', '牛肉轻食'];
+                        const cry = ['饭堂', '垃圾外卖'];
+                        const hasSmile = dayDone.some(t => smile.includes(t));
+                        const hasCry = dayDone.some(t => cry.includes(t));
+                        if (hasSmile) data2.calendar.lunch[today2] = '😊';
+                        else if (hasCry) data2.calendar.lunch[today2] = '😢';
+                        else delete data2.calendar.lunch[today2];
+                        saveData(data2);
+                        renderLunch();
+                    }
+                });
+            });
+
+            // 添加
+            document.getElementById('lunch-add').onclick = function() {
+                const input = document.getElementById('lunch-input');
+                const val = input.value.trim();
+                if (!val) return;
+                const data2 = loadData();
+                const today2 = getToday();
+                const key2 = `lunch_${today2}`;
+                if (!data2.lunch[key2]) {
+                    data2.lunch[key2] = { todos: [...DEFAULT_DATA.lunch.todos], done: [] };
+                }
+                data2.lunch[key2].todos.push(val);
+                saveData(data2);
+                input.value = '';
+                renderLunch();
+            };
+            document.getElementById('lunch-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') document.getElementById('lunch-add').click();
+            });
+
+            // 标题徽章
+            const badge = document.getElementById('lunch-badge');
+            const todayCal = data.calendar.lunch[today];
+            badge.textContent = todayCal || '';
+
+            // 日历
+            renderCalendar('lunch', document.getElementById('lunch-calendar'));
+        }
+
+        // ================================================================
+        //  晚餐
+        // ================================================================
+        function renderDinner() {
+            const data = loadData();
+            const today = getToday();
+            const key = `dinner_${today}`;
+            const dayData = data.dinner[key] || { todos: [...DEFAULT_DATA.dinner.todos], done: [] };
+            const list = document.getElementById('dinner-list');
+            list.innerHTML = '';
+            const allTodos = dayData.todos;
+            const doneSet = new Set(dayData.done);
+
+            allTodos.forEach((task) => {
+                const checked = doneSet.has(task);
+                const div = document.createElement('div');
+                div.className = 'todo-item';
+                div.innerHTML = `
+              <input type="checkbox" ${checked ? 'checked' : ''} data-task="${task.replace(/"/g, '&quot;')}" />
+              <span class="todo-label ${checked ? 'done' : ''}">${task}</span>
+              <button class="delete-btn" data-task="${task.replace(/"/g, '&quot;')}"><i>✕</i></button>
+            `;
+                list.appendChild(div);
+            });
+
+            list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `dinner_${today2}`;
+                    if (!data2.dinner[key2]) {
+                        data2.dinner[key2] = { todos: [...DEFAULT_DATA.dinner.todos], done: [] };
+                    }
+                    const day = data2.dinner[key2];
+                    if (this.checked) {
+                        if (!day.done.includes(task)) day.done.push(task);
+                        const smileCombos = ['鸡腿+水煮青菜', '豆腐+红薯+青菜'];
+                        const cryTasks = ['垃圾外卖'];
+                        if (smileCombos.includes(task)) {
+                            showFloatEmoji('😊');
+                            data2.calendar.dinner[today2] = '😊';
+                        } else if (cryTasks.includes(task)) {
+                            showFloatEmoji('😢');
+                            data2.calendar.dinner[today2] = '😢';
+                        }
+                    } else {
+                        day.done = day.done.filter(t => t !== task);
+                        const dayDone = day.done;
+                        const smile = ['鸡腿+水煮青菜', '豆腐+红薯+青菜'];
+                        const cry = ['垃圾外卖'];
+                        const hasSmile = dayDone.some(t => smile.includes(t));
+                        const hasCry = dayDone.some(t => cry.includes(t));
+                        if (hasSmile) data2.calendar.dinner[today2] = '😊';
+                        else if (hasCry) data2.calendar.dinner[today2] = '😢';
+                        else delete data2.calendar.dinner[today2];
+                    }
+                    saveData(data2);
+                    renderDinner();
+                });
+            });
+
+            list.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `dinner_${today2}`;
+                    if (data2.dinner[key2]) {
+                        data2.dinner[key2].todos = data2.dinner[key2].todos.filter(t => t !== task);
+                        data2.dinner[key2].done = data2.dinner[key2].done.filter(t => t !== task);
+                        const dayDone = data2.dinner[key2].done;
+                        const smile = ['鸡腿+水煮青菜', '豆腐+红薯+青菜'];
+                        const cry = ['垃圾外卖'];
+                        const hasSmile = dayDone.some(t => smile.includes(t));
+                        const hasCry = dayDone.some(t => cry.includes(t));
+                        if (hasSmile) data2.calendar.dinner[today2] = '😊';
+                        else if (hasCry) data2.calendar.dinner[today2] = '😢';
+                        else delete data2.calendar.dinner[today2];
+                        saveData(data2);
+                        renderDinner();
+                    }
+                });
+            });
+
+            document.getElementById('dinner-add').onclick = function() {
+                const input = document.getElementById('dinner-input');
+                const val = input.value.trim();
+                if (!val) return;
+                const data2 = loadData();
+                const today2 = getToday();
+                const key2 = `dinner_${today2}`;
+                if (!data2.dinner[key2]) {
+                    data2.dinner[key2] = { todos: [...DEFAULT_DATA.dinner.todos], done: [] };
+                }
+                data2.dinner[key2].todos.push(val);
+                saveData(data2);
+                input.value = '';
+                renderDinner();
+            };
+            document.getElementById('dinner-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') document.getElementById('dinner-add').click();
+            });
+
+            const badge = document.getElementById('dinner-badge');
+            const todayCal = data.calendar.dinner[today];
+            badge.textContent = todayCal || '';
+
+            renderCalendar('dinner', document.getElementById('dinner-calendar'));
+        }
+
+        // ================================================================
+        //  锻炼
+        // ================================================================
+        function renderFitness() {
+            const data = loadData();
+            const today = getToday();
+            const key = `fitness_${today}`;
+            const dayData = data.fitness[key] || { todos: [...DEFAULT_DATA.fitness.todos], done: [] };
+            const list = document.getElementById('fitness-list');
+            list.innerHTML = '';
+            const allTodos = dayData.todos;
+            const doneSet = new Set(dayData.done);
+            const doneCount = doneSet.size;
+            const total = allTodos.length;
+
+            // 进度环
+            const pct = total > 0 ? Math.min(doneCount / total, 1) : 0;
+            const circumference = 263.89;
+            const offset = circumference * (1 - pct);
+            const ring = document.getElementById('fitness-ring');
+            ring.style.strokeDashoffset = offset;
+            document.getElementById('fitness-progress-text').innerHTML =
+                `${doneCount} <small>/ ${total}</small>`;
+
+            const minutes = doneCount * 30; // 每个任务30分钟估算
+            document.getElementById('fitness-status-label').textContent =
+                minutes > 0 ? `已完成 ${minutes} 分钟` : '还没有运动记录';
+
+            allTodos.forEach((task) => {
+                const checked = doneSet.has(task);
+                const div = document.createElement('div');
+                div.className = 'todo-item';
+                div.innerHTML = `
+              <input type="checkbox" ${checked ? 'checked' : ''} data-task="${task.replace(/"/g, '&quot;')}" />
+              <span class="todo-label ${checked ? 'done' : ''}">${task}</span>
+              <button class="delete-btn" data-task="${task.replace(/"/g, '&quot;')}"><i>✕</i></button>
+            `;
+                list.appendChild(div);
+            });
+
+            list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `fitness_${today2}`;
+                    if (!data2.fitness[key2]) {
+                        data2.fitness[key2] = { todos: [...DEFAULT_DATA.fitness.todos], done: [] };
+                    }
+                    const day = data2.fitness[key2];
+                    if (this.checked) {
+                        if (!day.done.includes(task)) day.done.push(task);
+                    } else {
+                        day.done = day.done.filter(t => t !== task);
+                    }
+                    // 检查是否同时完成两个默认任务
+                    const dayDone = day.done;
+                    const hasMorning = dayDone.includes('早上快走30分钟');
+                    const hasEvening = dayDone.includes('晚上无氧30分钟');
+                    if (hasMorning && hasEvening) {
+                        if (!data2.fitnessEmojiTriggered) {
+                            showFloatEmoji('😊');
+                            data2.fitnessEmojiTriggered = true;
+                            data2.calendar.fitness[today2] = '😊';
+                        }
+                    } else {
+                        data2.fitnessEmojiTriggered = false;
+                        delete data2.calendar.fitness[today2];
+                    }
+                    // 检查22点哭脸逻辑（在页面加载时也检查）
+                    saveData(data2);
+                    renderFitness();
+                    checkFitnessCry();
+                });
+            });
+
+            list.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const task = this.dataset.task;
+                    const data2 = loadData();
+                    const today2 = getToday();
+                    const key2 = `fitness_${today2}`;
+                    if (data2.fitness[key2]) {
+                        data2.fitness[key2].todos = data2.fitness[key2].todos.filter(t => t !== task);
+                        data2.fitness[key2].done = data2.fitness[key2].done.filter(t => t !== task);
+                        const dayDone = data2.fitness[key2].done;
+                        const hasMorning = dayDone.includes('早上快走30分钟');
+                        const hasEvening = dayDone.includes('晚上无氧30分钟');
+                        if (hasMorning && hasEvening) {
+                            data2.calendar.fitness[today2] = '😊';
+                        } else {
+                            delete data2.calendar.fitness[today2];
+                        }
+                        data2.fitnessEmojiTriggered = false;
+                        saveData(data2);
+                        renderFitness();
+                        checkFitnessCry();
+                    }
+                });
+            });
+
+            document.getElementById('fitness-add').onclick = function() {
+                const input = document.getElementById('fitness-input');
+                const val = input.value.trim();
+                if (!val) return;
+                const data2 = loadData();
+                const today2 = getToday();
+                const key2 = `fitness_${today2}`;
+                if (!data2.fitness[key2]) {
+                    data2.fitness[key2] = { todos: [...DEFAULT_DATA.fitness.todos], done: [] };
+                }
+                data2.fitness[key2].todos.push(val);
+                saveData(data2);
+                input.value = '';
+                renderFitness();
+            };
+            document.getElementById('fitness-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') document.getElementById('fitness-add').click();
+            });
+
+            const badge = document.getElementById('fitness-badge');
+            const todayCal = data.calendar.fitness[today];
+            badge.textContent = todayCal || '';
+
+            renderCalendar('fitness', document.getElementById('fitness-calendar'));
+            checkFitnessCry();
+        }
+
+        function checkFitnessCry() {
+            const data = loadData();
+            const today = getToday();
+            const now = new Date();
+            const hour = now.getHours();
+            // 只在 22:00 之后检查
+            if (hour >= 22) {
+                const key = `fitness_${today}`;
+                const dayData = data.fitness[key] || { todos: [], done: [] };
+                const hasMorning = dayData.done.includes('早上快走30分钟');
+                const hasEvening = dayData.done.includes('晚上无氧30分钟');
+                if (!(hasMorning && hasEvening)) {
+                    if (!data.calendar.fitness[today] || data.calendar.fitness[today] !== '😢') {
+                        data.calendar.fitness[today] = '😢';
+                        saveData(data);
+                        renderFitness();
+                        // 只弹一次
+                        const key2 = `fitness_cry_${today}`;
+                        if (!sessionStorage.getItem(key2)) {
+                            showFloatEmoji('😢');
+                            sessionStorage.setItem(key2, '1');
+                        }
+                    }
+                }
+            }
+        }
+
+        // ================================================================
+        //  日历渲染
+        // ================================================================
+        function renderCalendar(type, container) {
+            const data = loadData();
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const days = getMonthDays(year, month);
+            const today = getToday();
+
+            const calData = data.calendar[type] || {};
+
+            // 获取当月第一天是星期几 (0=周日)
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const totalCells = Math.ceil((firstDay + days.length) / 7) * 7;
+
+            let html = '';
+            const weekLabels = ['日', '一', '二', '三', '四', '五', '六'];
+            weekLabels.forEach(label => {
+                html += `<div class="day-label">${label}</div>`;
+            });
+
+            for (let i = 0; i < totalCells; i++) {
+                if (i < firstDay) {
+                    html += `<div class="day-cell empty"></div>`;
+                    continue;
+                }
+                const dayIdx = i - firstDay;
+                if (dayIdx >= days.length) {
+                    html += `<div class="day-cell empty"></div>`;
+                    continue;
+                }
+                const dateStr = days[dayIdx];
+                const isToday = dateStr === today;
+                const emoji = calData[dateStr] || '';
+                // 显示日期数字和表情
+                const dayNum = new Date(dateStr).getDate();
+                html += `
+              <div class="day-cell ${isToday ? 'today' : ''}">
+                ${emoji ? `<span class="face">${emoji}</span>` : `<span class="date-num">${dayNum}</span>`}
+              </div>
+            `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ================================================================
+        //  记账
+        // ================================================================
+        function renderAccount(viewDate) {
+            const data = loadData();
+            const today = getToday();
+            const targetDate = viewDate || today;
+            const records = data.account.records || [];
+            const dayRecords = records.filter(r => r.date === targetDate);
+
+            // 汇总
+            let income = 0,
+                expense = 0;
+            dayRecords.forEach(r => {
+                if (r.type === 'income') income += r.amount;
+                else expense += r.amount;
+            });
+            const balance = income - expense;
+            document.getElementById('account-balance').innerHTML =
+                `<small>¥</small>${balance.toFixed(2)}`;
+            document.getElementById('account-income-total').textContent = income.toFixed(2);
+            document.getElementById('account-expense-total').textContent = expense.toFixed(2);
+
+            // 流水列表
+            const container = document.getElementById('account-flow-list');
+            if (dayRecords.length === 0) {
+                container.innerHTML = `<div class="flow-empty">今天还没有记录，点下方按钮记一笔吧 🐾</div>`;
+                return;
+            }
+            const sorted = [...dayRecords].sort((a, b) => b.id - a.id);
+            container.innerHTML = '';
+            sorted.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'flow-item';
+                div.style.borderLeftColor = r.type === 'income' ? '#6b9e7a' : '#d47a5e';
+                div.innerHTML = `
+              <span class="icon">${r.category || '📦'}</span>
+              <span class="note">${r.note || '无备注'}</span>
+              <span class="amount ${r.type}">${r.type === 'income' ? '+' : '-'}¥${r.amount.toFixed(2)}</span>
+              <button class="del-flow" data-id="${r.id}"><i>🗑️</i></button>
+            `;
+                container.appendChild(div);
+            });
+
+            // 删除
+            container.querySelectorAll('.del-flow').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    const data2 = loadData();
+                    data2.account.records = data2.account.records.filter(r => r.id !== id);
+                    saveData(data2);
+                    renderAccount(targetDate);
+                });
+            });
+        }
+
+        // ================================================================
+        //  早睡打卡
+        // ================================================================
+        function renderSleep() {
+            const data = loadData();
+            const today = getToday();
+            const target = data.sleep.target || '22:00';
+            const targetEl = document.getElementById('sleep-target-display');
+            targetEl.innerHTML = `⏰ 目标：${target} <span class="edit-hint">（点击修改）</span>`;
+            targetEl.onclick = openSleepModal;
+
+            const history = data.sleep.history || {};
+            const todayRecord = history[today];
+            const statusEl = document.getElementById('sleep-status-display');
+            const subEl = document.getElementById('sleep-time-sub');
+            const btn = document.getElementById('sleep-btn');
+
+            if (todayRecord) {
+                statusEl.innerHTML = `✅ 已按时入睡 <span class="sub">${todayRecord}</span>`;
+                subEl.textContent = `打卡时间 ${todayRecord}`;
+                btn.className = 'sleep-btn done';
+                btn.innerHTML = `
+              <span>💤 已打卡</span>
+              <span class="small">${todayRecord}</span>
+            `;
+                btn.disabled = true;
+            } else {
+                statusEl.innerHTML = '🟡 今天还没睡';
+                subEl.textContent = '';
+                btn.className = 'sleep-btn';
+                btn.innerHTML = `
+              <span>🌙 准备睡觉</span>
+              <span class="small">点击记录入睡时间</span>
+            `;
+                btn.disabled = false;
+            }
+
+            // 周记录
+            const weekDays = getWeekDays();
+            const dotsContainer = document.getElementById('sleep-week-dots');
+            dotsContainer.innerHTML = '';
+            weekDays.forEach(d => {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                if (history[d]) dot.classList.add('done');
+                if (d === today) dot.classList.add('today');
+                dot.textContent = new Date(d).getDate();
+                dotsContainer.appendChild(dot);
+            });
+
+            // 连续天数
+            let streak = 0;
+            const sortedDates = Object.keys(history).sort();
+            for (let i = sortedDates.length - 1; i >= 0; i--) {
+                const d = sortedDates[i];
+                if (history[d]) {
+                    // 检查是否是连续的
+                    const prev = new Date(d);
+                    const expected = new Date(today);
+                    expected.setDate(expected.getDate() - streak);
+                    if (prev.toISOString().slice(0, 10) === expected.toISOString().slice(0, 10)) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            document.getElementById('sleep-streak-text').innerHTML =
+                `🔥 已连续坚持 <strong>${streak}</strong> 天`;
+
+            // 打卡按钮
+            btn.onclick = function() {
+                if (btn.disabled) return;
+                const now = new Date();
+                const timeStr = now.toTimeString().slice(0, 5);
+                const data2 = loadData();
+                if (!data2.sleep.history) data2.sleep.history = {};
+                data2.sleep.history[today] = timeStr;
+                saveData(data2);
+                renderSleep();
+                showFloatEmoji('😊');
+            };
+        }
+
+        // ================================================================
+        //  导航切换
+        // ================================================================
+        document.querySelectorAll('.sidebar nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.dataset.page;
+                document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(`page-${page}`).classList.add('active');
+                // 切换时刷新对应页面
+                switch (page) {
+                    case 'breakfast':
+                        renderBreakfast();
+                        break;
+                    case 'lunch':
+                        renderLunch();
+                        break;
+                    case 'dinner':
+                        renderDinner();
+                        break;
+                    case 'fitness':
+                        renderFitness();
+                        break;
+                    case 'account':
+                        renderAccount();
+                        break;
+                    case 'sleep':
+                        renderSleep();
+                        break;
+                }
+            });
+        });
+
+        // ================================================================
+        //  记账 Modal
+        // ================================================================
+        const modal = document.getElementById('account-modal');
+        const addBtn = document.getElementById('account-add-btn');
+        const cancelBtn = document.getElementById('flow-cancel');
+        let flowType = 'expense';
+
+        addBtn.onclick = () => modal.classList.add('open');
+        cancelBtn.onclick = () => modal.classList.remove('open');
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) modal.classList.remove('open');
+        });
+
+        document.querySelectorAll('#flow-type-toggle button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#flow-type-toggle button').forEach(b => b.classList.remove(
+                'active'));
+                this.classList.add('active');
+                flowType = this.dataset.type;
+            });
+        });
+
+        document.getElementById('flow-save').addEventListener('click', function() {
+            const amount = parseFloat(document.getElementById('flow-amount').value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('请输入有效的金额');
+                return;
+            }
+            const category = document.getElementById('flow-category').value;
+            const note = document.getElementById('flow-note').value.trim() || '无备注';
+            const data = loadData();
+            if (!data.account.records) data.account.records = [];
+            data.account.records.push({
+                id: Date.now() + Math.random() * 1000,
+                date: getToday(),
+                type: flowType,
+                amount: amount,
+                category: category,
+                note: note,
+            });
+            saveData(data);
+            modal.classList.remove('open');
+            document.getElementById('flow-amount').value = '';
+            document.getElementById('flow-note').value = '';
+            renderAccount();
+        });
+
+        // ================================================================
+        //  记账日历选择
+        // ================================================================
+        const pickerTrigger = document.getElementById('account-calendar-trigger');
+        const pickerPopup = document.getElementById('account-date-picker');
+        const pickerClose = document.getElementById('account-picker-close');
+        const pickerInput = document.getElementById('account-view-date');
+
+        pickerTrigger.onclick = function(e) {
+            e.stopPropagation();
+            pickerPopup.classList.toggle('open');
+            if (pickerPopup.classList.contains('open')) {
+                pickerInput.value = getToday();
+            }
+        };
+        pickerClose.onclick = () => pickerPopup.classList.remove('open');
+        pickerInput.addEventListener('change', function() {
+            const date = this.value;
+            if (date) {
+                renderAccount(date);
+                pickerPopup.classList.remove('open');
+            }
+        });
+        document.addEventListener('click', function(e) {
+            if (!pickerPopup.contains(e.target) && e.target !== pickerTrigger) {
+                pickerPopup.classList.remove('open');
+            }
+        });
+
+        // ================================================================
+        //  早睡目标设置
+        // ================================================================
+        const sleepModal = document.getElementById('sleep-target-modal');
+        function openSleepModal() {
+            const data = loadData();
+            document.getElementById('sleep-target-input').value = data.sleep.target || '22:00';
+            sleepModal.classList.add('open');
+        }
+        document.getElementById('sleep-settings-btn').onclick = openSleepModal;
+        document.getElementById('sleep-target-cancel').onclick = () => sleepModal.classList.remove('open');
+        document.getElementById('sleep-target-save').onclick = function() {
+            const val = document.getElementById('sleep-target-input').value;
+            if (val) {
+                const data = loadData();
+                data.sleep.target = val;
+                saveData(data);
+                sleepModal.classList.remove('open');
+                renderSleep();
+            }
+        };
+        sleepModal.addEventListener('click', function(e) {
+            if (e.target === this) sleepModal.classList.remove('open');
+        });
+
+        // ================================================================
+        //  早睡历史查看（简易）
+        // ================================================================
+        document.getElementById('sleep-history-btn').onclick = function() {
+            const data = loadData();
+            const history = data.sleep.history || {};
+            const entries = Object.entries(history).sort((a, b) => b[0].localeCompare(a[0]));
+            if (entries.length === 0) {
+                alert('还没有打卡记录 🐱');
+                return;
+            }
+            let msg = '📅 历史打卡记录：\n\n';
+            entries.slice(0, 30).forEach(([date, time]) => {
+                msg += `${date}  ✅ ${time}\n`;
+            });
+            if (entries.length > 30) msg += `\n... 共 ${entries.length} 条记录`;
+            alert(msg);
+        };
+
+        // ================================================================
+        //  初始化：默认打开早餐，并渲染所有页面
+        // ================================================================
+        // 尝试从云端恢复数据（异步，不阻塞渲染）
+        restoreFromCloud().then(() => {
+            initTodayData();
+            renderAll();
+        }).catch(() => {
+            initTodayData();
+            renderAll();
+        });
+
+        function renderAll() {
+            renderBreakfast();
+            renderLunch();
+            renderDinner();
+            renderFitness();
+            renderAccount();
+            renderSleep();
+        }
+
+        // 检查22点哭脸（定时每5分钟检查一次）
+        setInterval(checkFitnessCry, 300000);
+
+        // 每日重置逻辑：数据按日期存储，天然支持每日重置。
+        // 对于早餐/午餐/晚餐/锻炼，每天独立存储，新的一天自动重置。
+        console.log('🐱 个人工作台已加载，数据存储于 localStorage');
+    </script>
+
+</body>
+</html>
