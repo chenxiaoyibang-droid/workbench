@@ -1380,38 +1380,51 @@
             return false;
         }
 
-        // 本地时区日期字符串 YYYY-MM-DD（避免 toISOString 的 UTC 时区偏移 bug）
+        // ===== 东八区(北京时间 UTC+8)时间工具 =====
+        // 无论访问者在世界哪个时区，日期与时刻都按北京时间计算。
+        // 实现思路：把真实 UTC 时间戳 +8h，得到“北京时间对应的 UTC 时间戳”，
+        // 再用 getUTC* 系列方法读取，从而完全脱离浏览器本地时区。
+        const TZ_OFFSET_MS = 8 * 60 * 60 * 1000; // 东八区相对 UTC 的毫秒数
+        function beijingNow() {
+            return new Date(Date.now() + TZ_OFFSET_MS);
+        }
+        // 传入任意 Date，返回该时刻对应的北京时间 YYYY-MM-DD
         function toDateStr(d) {
-            const y = d.getFullYear();
-            const m = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
+            const bj = new Date(d.getTime() + TZ_OFFSET_MS);
+            const y = bj.getUTCFullYear();
+            const m = String(bj.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(bj.getUTCDate()).padStart(2, '0');
             return `${y}-${m}-${day}`;
         }
-
         function getToday() {
             return toDateStr(new Date());
         }
+        // 取北京时间的几点钟（0-23），用于“22点哭脸”等判断
+        function getBeijingHour() {
+            return beijingNow().getUTCHours();
+        }
 
         function getWeekDays() {
-            const now = new Date();
-            const day = now.getDay();
+            const now = beijingNow();
+            const day = now.getUTCDay();
             const mondayOffset = day === 0 ? -6 : 1 - day;
-            const monday = new Date(now);
-            monday.setDate(now.getDate() + mondayOffset);
+            // 用 UTC 日期构造，避免本地时区干扰
+            const y = now.getUTCFullYear();
+            const m = now.getUTCMonth();
+            const d = now.getUTCDate();
             const days = [];
             for (let i = 0; i < 7; i++) {
-                const d = new Date(monday);
-                d.setDate(monday.getDate() + i);
-                days.push(toDateStr(d));
+                const dd = new Date(Date.UTC(y, m, d + mondayOffset + i));
+                days.push(toDateStr(dd));
             }
             return days;
         }
 
         function getMonthDays(year, month) {
             const days = [];
-            const count = new Date(year, month, 0).getDate();
+            const count = new Date(Date.UTC(year, month, 0)).getUTCDate();
             for (let i = 1; i <= count; i++) {
-                const d = new Date(year, month - 1, i);
+                const d = new Date(Date.UTC(year, month - 1, i));
                 days.push(toDateStr(d));
             }
             return days;
@@ -1877,8 +1890,7 @@
         function checkFitnessCry() {
             const data = loadData();
             const today = getToday();
-            const now = new Date();
-            const hour = now.getHours();
+            const hour = getBeijingHour();
             // 只在 22:00 之后检查
             if (hour >= 22) {
                 const key = `fitness_${today}`;
@@ -1906,16 +1918,16 @@
         // ================================================================
         function renderCalendar(type, container) {
             const data = loadData();
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth() + 1;
+            const now = beijingNow();
+            const year = now.getUTCFullYear();
+            const month = now.getUTCMonth() + 1;
             const days = getMonthDays(year, month);
             const today = getToday();
 
             const calData = data.calendar[type] || {};
 
-            // 获取当月第一天是星期几 (0=周日)
-            const firstDay = new Date(year, month - 1, 1).getDay();
+            // 获取当月第一天是星期几 (0=周日)，用 UTC 方法避免时区干扰
+            const firstDay = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
             const totalCells = Math.ceil((firstDay + days.length) / 7) * 7;
 
             let html = '';
@@ -1937,8 +1949,8 @@
                 const dateStr = days[dayIdx];
                 const isToday = dateStr === today;
                 const emoji = calData[dateStr] || '';
-                // 显示日期数字和表情
-                const dayNum = new Date(dateStr).getDate();
+                // 显示日期数字和表情（直接从 YYYY-MM-DD 取日部分，避免时区解析问题）
+                const dayNum = parseInt(dateStr.slice(8), 10);
                 html += `
               <div class="day-cell ${isToday ? 'today' : ''}">
                 ${emoji ? `<span class="face">${emoji}</span>` : `<span class="date-num">${dayNum}</span>`}
@@ -2051,21 +2063,20 @@
                 dot.className = 'dot';
                 if (history[d]) dot.classList.add('done');
                 if (d === today) dot.classList.add('today');
-                dot.textContent = new Date(d).getDate();
+                dot.textContent = parseInt(d.slice(8), 10);
                 dotsContainer.appendChild(dot);
             });
 
-            // 连续天数
+            // 连续天数（基于北京时间日期字符串计算，避免时区解析问题）
             let streak = 0;
             const sortedDates = Object.keys(history).sort();
+            // 把 YYYY-MM-DD 转成 UTC 时间戳用于日期加减
+            const toUtcTs = s => Date.parse(s + 'T00:00:00Z');
             for (let i = sortedDates.length - 1; i >= 0; i--) {
                 const d = sortedDates[i];
                 if (history[d]) {
-                    // 检查是否是连续的
-                    const prev = new Date(d);
-                    const expected = new Date(today);
-                    expected.setDate(expected.getDate() - streak);
-                    if (toDateStr(prev) === toDateStr(expected)) {
+                    const expectedTs = toUtcTs(today) - streak * 86400000;
+                    if (toUtcTs(d) === expectedTs) {
                         streak++;
                     } else {
                         break;
@@ -2080,8 +2091,10 @@
             // 打卡按钮
             btn.onclick = function() {
                 if (btn.disabled) return;
-                const now = new Date();
-                const timeStr = now.toTimeString().slice(0, 5);
+                const now = beijingNow();
+                const hh = String(now.getUTCHours()).padStart(2, '0');
+                const mm = String(now.getUTCMinutes()).padStart(2, '0');
+                const timeStr = `${hh}:${mm}`;
                 const data2 = loadData();
                 if (!data2.sleep.history) data2.sleep.history = {};
                 data2.sleep.history[today] = timeStr;
