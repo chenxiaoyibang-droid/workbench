@@ -300,6 +300,56 @@
             box-shadow: 0 4px 12px rgba(180, 140, 120, 0.15);
         }
 
+        /* ===== 日历月份切换条 ===== */
+        .cal-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .cal-nav .cal-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #3d2c2a;
+        }
+        .cal-nav .cal-month {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #8a6f5f;
+            background: #fcf8f6;
+            padding: 4px 10px;
+            border-radius: 10px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .cal-nav .cal-month button {
+            background: none;
+            border: none;
+            color: #b8a39a;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            transition: 0.15s;
+            font-weight: 700;
+        }
+        .cal-nav .cal-month button:hover {
+            color: #c98d78;
+            transform: scale(1.15);
+        }
+        .cal-nav .cal-month .cal-month-label {
+            min-width: 76px;
+            text-align: center;
+            font-size: 13px;
+        }
+
         /* ===== 日历网格 ===== */
         .calendar-grid {
             display: grid;
@@ -1138,7 +1188,14 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-title"><i>📅</i> 本月午餐日历</div>
+                <div class="cal-nav">
+                    <div class="cal-title"><i>📅</i> 午餐日历</div>
+                    <div class="cal-month" data-cal="lunch">
+                        <button class="cal-prev">‹</button>
+                        <span class="cal-month-label"></span>
+                        <button class="cal-next">›</button>
+                    </div>
+                </div>
                 <div id="lunch-calendar" class="calendar-grid"></div>
             </div>
         </section>
@@ -1159,7 +1216,14 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-title"><i>📅</i> 本月晚餐日历</div>
+                <div class="cal-nav">
+                    <div class="cal-title"><i>📅</i> 晚餐日历</div>
+                    <div class="cal-month" data-cal="dinner">
+                        <button class="cal-prev">‹</button>
+                        <span class="cal-month-label"></span>
+                        <button class="cal-next">›</button>
+                    </div>
+                </div>
                 <div id="dinner-calendar" class="calendar-grid"></div>
             </div>
         </section>
@@ -1199,7 +1263,14 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-title"><i>📅</i> 本月锻炼日历</div>
+                <div class="cal-nav">
+                    <div class="cal-title"><i>📅</i> 锻炼日历</div>
+                    <div class="cal-month" data-cal="fitness">
+                        <button class="cal-prev">‹</button>
+                        <span class="cal-month-label"></span>
+                        <button class="cal-next">›</button>
+                    </div>
+                </div>
                 <div id="fitness-calendar" class="calendar-grid"></div>
             </div>
         </section>
@@ -1232,7 +1303,14 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-title"><i>📅</i> 本月记账日历</div>
+                <div class="cal-nav">
+                    <div class="cal-title"><i>📅</i> 记账日历</div>
+                    <div class="cal-month" data-cal="account">
+                        <button class="cal-prev">‹</button>
+                        <span class="cal-month-label"></span>
+                        <button class="cal-next">›</button>
+                    </div>
+                </div>
                 <div id="account-calendar" class="calendar-grid account-cal"></div>
                 <div class="month-stats" id="account-month-stats"></div>
             </div>
@@ -1475,6 +1553,30 @@
         // 取北京时间的几点钟（0-23），用于“22点哭脸”等判断
         function getBeijingHour() {
             return beijingNow().getUTCHours();
+        }
+
+        // ===== 日历查看月份管理 =====
+        // 每个日历当前查看的 {year, month}，null 表示跟随当月
+        const calViewMonth = { lunch: null, dinner: null, fitness: null, account: null };
+        // 取某个日历当前查看的年月（默认当月）
+        function getCalView(cal) {
+            if (calViewMonth[cal]) return calViewMonth[cal];
+            const now = beijingNow();
+            return { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
+        }
+        // 月份加减 1，处理跨年
+        function shiftMonth(year, month, delta) {
+            let m = month + delta;
+            let y = year;
+            if (m < 1) { m = 12; y--; }
+            if (m > 12) { m = 1; y++; }
+            return { year: y, month: m };
+        }
+        // 更新某个日历的月份标签
+        function updateCalLabel(cal) {
+            const v = getCalView(cal);
+            const el = document.querySelector(`.cal-month[data-cal="${cal}"] .cal-month-label`);
+            if (el) el.textContent = `${v.year}年${v.month}月`;
         }
 
         function getWeekDays() {
@@ -1991,11 +2093,13 @@
         // ================================================================
         function renderCalendar(type, container) {
             const data = loadData();
-            const now = beijingNow();
-            const year = now.getUTCFullYear();
-            const month = now.getUTCMonth() + 1;
+            // 查看月份：优先用 calViewMonth，默认当月
+            const view = getCalView(type);
+            const year = view.year;
+            const month = view.month;
             const days = getMonthDays(year, month);
             const today = getToday();
+            updateCalLabel(type);
 
             const calData = data.calendar[type] || {};
 
@@ -2056,12 +2160,13 @@
             const container = document.getElementById('account-calendar');
             if (!container) return;
             const data = loadData();
-            const now = beijingNow();
-            const year = now.getUTCFullYear();
-            const month = now.getUTCMonth() + 1;
+            const view = getCalView('account');
+            const year = view.year;
+            const month = view.month;
             const days = getMonthDays(year, month);
             const today = getToday();
             const monthMap = getMonthAccountSummary(year, month);
+            updateCalLabel('account');
             const firstDay = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
             const totalCells = Math.ceil((firstDay + days.length) / 7) * 7;
 
@@ -2105,9 +2210,9 @@
         function renderMonthStats() {
             const el = document.getElementById('account-month-stats');
             if (!el) return;
-            const now = beijingNow();
-            const year = now.getUTCFullYear();
-            const month = now.getUTCMonth() + 1;
+            const view = getCalView('account');
+            const year = view.year;
+            const month = view.month;
             const monthMap = getMonthAccountSummary(year, month);
             let income = 0, expense = 0;
             Object.values(monthMap).forEach(d => {
@@ -2393,6 +2498,34 @@
             }
         });
 
+        // ================================================================
+        //  日历月份切换（午餐/晚餐/锻炼/记账通用）
+        // ================================================================
+        document.querySelectorAll('.cal-month').forEach(function(box) {
+            const cal = box.dataset.cal;
+            const prev = box.querySelector('.cal-prev');
+            const next = box.querySelector('.cal-next');
+            prev.addEventListener('click', function() {
+                const v = getCalView(cal);
+                calViewMonth[cal] = shiftMonth(v.year, v.month, -1);
+                refreshCalendar(cal);
+            });
+            next.addEventListener('click', function() {
+                const v = getCalView(cal);
+                calViewMonth[cal] = shiftMonth(v.year, v.month, 1);
+                refreshCalendar(cal);
+            });
+        });
+
+        // 刷新指定日历（按类型分发）
+        function refreshCalendar(cal) {
+            if (cal === 'account') {
+                renderAccountCalendar();
+                renderMonthStats();
+            } else {
+                renderCalendar(cal, document.getElementById(cal + '-calendar'));
+            }
+        }
         // ================================================================
         //  早睡目标设置
         // ================================================================
